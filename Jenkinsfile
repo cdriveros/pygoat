@@ -1,5 +1,9 @@
 pipeline {
-  agent any
+   agent {
+    docker {
+      image 'python:3.12-slim'
+    }
+  }
   stages {
     stage('Security gate - Bandit (HIGH)') {
       steps {
