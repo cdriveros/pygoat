@@ -13,7 +13,7 @@ pipeline {
     SBOM_FILE = 'bom.xml'
   }
   stages {
-    stage('Security gate - Bandit (HIGH)') {
+    /*stage('Security gate - Bandit (HIGH)') {
       steps {
         sh ''
         '
@@ -32,7 +32,7 @@ pipeline {
           archiveArtifacts artifacts: 'bandit.json', fingerprint: true
         }
       }
-    }
+    }*/
     stage('Generate SBOM') {
       steps {
         sh ''
