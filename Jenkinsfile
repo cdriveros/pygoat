@@ -34,13 +34,15 @@ pipeline {
       }
     }*/
    stage('Generate SBOM') {
-      steps {
+     steps {
         sh '''
           set -eux
-          python --version
+          python3 -m venv .venv
+          . .venv/bin/activate
+    
           python -m pip install -U pip cyclonedx-bom
-          cyclonedx-py -o ${SBOM_FILE}
-          ls -lah ${SBOM_FILE}
+          cyclonedx-py -o bom.xml
+          ls -lah bom.xml
         '''
       }
     }
