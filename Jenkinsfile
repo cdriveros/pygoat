@@ -33,8 +33,8 @@ pipeline {
         }
       }
     }*/
-    stage('Generate SBOM') {
-       steps {
+   stage('Generate SBOM') {
+      steps {
         sh '''
           set -eux
           docker run --rm -v "$PWD:/work" -w /work python:3.12-slim sh -lc "
