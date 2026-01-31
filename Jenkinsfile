@@ -42,18 +42,18 @@ pipeline {
     
           python -m pip install -U pip cyclonedx-bom
     
-          # Opcional: si existe requirements.txt, instalar para que el SBOM refleje dependencias reales
+          # Genera el SBOM leyendo requirements.txt (sin instalar nada)
           if [ -f requirements.txt ]; then
-            python -m pip install -r requirements.txt
+            cyclonedx-py requirements requirements.txt --of XML --sv 1.6 -o "${SBOM_FILE}"
+          else
+            # fallback por si no existe requirements.txt
+            cyclonedx-py environment --of XML --sv 1.6 -o "${SBOM_FILE}"
           fi
     
-          # Genera SBOM desde el entorno del venv
-          cyclonedx-py environment --of XML --sv 1.6 -o "${SBOM_FILE}"
           ls -lah "${SBOM_FILE}"
         '''
       }
     }
-    
     stage('Upload to Dependency-Track') {
       steps {
         dependencyTrackPublisher(
