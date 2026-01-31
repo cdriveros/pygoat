@@ -56,10 +56,10 @@ pipeline {
         )
       }
     }
-    post {
-      always {
+  }
+  post {
+    always {
         archiveArtifacts artifacts: "${SBOM_FILE}", fingerprint: true
-      }
     }
   }
 }
