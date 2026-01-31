@@ -34,21 +34,15 @@ pipeline {
       }
     }*/
     stage('Generate SBOM') {
-      steps {
-        sh ''
-        '
-        set - eux
-        docker run--rm - v "$PWD:/work" - w / work python: 3.12 - slim sh - lc "
-        python - m pip install - U pip cyclonedx - bom &&
-          cyclonedx - py - o $ {
-            SBOM_FILE
-          }
-        "
-        ls - lah $ {
-          SBOM_FILE
-        }
-        ''
-        '
+       steps {
+        sh '''
+          set -eux
+          docker run --rm -v "$PWD:/work" -w /work python:3.12-slim sh -lc "
+            python -m pip install -U pip cyclonedx-bom &&
+            cyclonedx-py -o ${SBOM_FILE}
+          "
+          ls -lah ${SBOM_FILE}
+        '''
       }
     }
 
