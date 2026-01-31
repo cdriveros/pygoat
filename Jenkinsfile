@@ -34,19 +34,26 @@ pipeline {
       }
     }*/
    stage('Generate SBOM') {
-     steps {
+      steps {
         sh '''
           set -eux
           python3 -m venv .venv
           . .venv/bin/activate
     
           python -m pip install -U pip cyclonedx-bom
-          cyclonedx-py -o bom.xml
-          ls -lah bom.xml
+    
+          # Opcional: si existe requirements.txt, instalar para que el SBOM refleje dependencias reales
+          if [ -f requirements.txt ]; then
+            python -m pip install -r requirements.txt
+          fi
+    
+          # Genera SBOM desde el entorno del venv
+          cyclonedx-py environment --of XML --sv 1.6 -o "${SBOM_FILE}"
+          ls -lah "${SBOM_FILE}"
         '''
       }
     }
-
+    
     stage('Upload to Dependency-Track') {
       steps {
         dependencyTrackPublisher(
