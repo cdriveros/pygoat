@@ -33,7 +33,7 @@ pipeline {
         }
       }
     }*/
-   stage('Generate SBOM') {
+   /*stage('Generate SBOM') {
       steps {
         sh '''
           set -eux
@@ -69,5 +69,38 @@ pipeline {
     always {
         archiveArtifacts artifacts: "${SBOM_FILE}", fingerprint: true
     }
-  }
+  }*/
+
+  stage('Secret Scan - Gitleaks') {
+      // Corre el stage dentro del contenedor oficial de gitleaks
+      // IMPORTANTE: se fuerza entrypoint vacío para que Jenkins pueda ejecutar "sh"
+      agent {
+        docker {
+          image 'gitleaks/gitleaks:8.18.0'
+          args  '--entrypoint=""'
+          reuseNode true
+        }
+      }
+
+      steps {
+        sh '''
+          set -e
+          gitleaks version
+
+          # Escanea el repo del workspace. Si hay leaks, devuelve exit code 1 y falla el stage.
+          gitleaks detect \
+            --source . \
+            --report-format json \
+            --report-path gitleaks-report.json \
+            --redact \
+            --exit-code 1
+        '''
+      }
+
+      post {
+        always {
+          archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
+        }
+      }
+    }
 }
