@@ -11,6 +11,10 @@ pipeline {
     PROJECT_NAME = 'pygoat'
     PROJECT_VER = "build-${BUILD_NUMBER}"
     SBOM_FILE = 'bom.xml'
+
+    PATH+SYSTEM = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    PATH+JAVA   = "${JAVA_HOME}/bin"
+    
   }
   stages {
     /*stage('Security gate - Bandit (HIGH)') {
