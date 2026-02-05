@@ -16,17 +16,17 @@ pipeline {
     
   }
   stages {
-    /*stage('Security gate - Bandit (HIGH)') {
+     stage('Security gate - Bandit (HIGH)') {
       steps {
         sh ''
         '
         python--version
         python - m pip--version
 
-        # No hace falta "pip -U pip"
+        // Dependencias (pip): instalamos Bandit sin actualizar pip (no es necesario en el agente) y sin cache para builds más reproducibles y livianos. "--user" evita requerir permisos de root.
         python - m pip install--user--no - cache - dir bandit
 
-        # Gate: solo severidad HIGH(y opcionalmente confianza HIGH)
+        //Security Gate (Bandit): falla el build si detecta vulnerabilidades de severidad HIGH; opcionalmente filtra también por confianza HIGH para reducir falsos positivos. Genera reporte JSON en bandit.json para el paso de análisis/publicación.
         python - m bandit - r.--severity - level high--confidence - level high - f json - o bandit.json ''
         '
       }
@@ -35,8 +35,8 @@ pipeline {
           archiveArtifacts artifacts: 'bandit.json', fingerprint: true
         }
       }
-    }*/
-   /*stage('Generate SBOM') {
+    }
+   stage('Generate SBOM') {
       steps {
         sh '''
           set -eux
@@ -72,7 +72,7 @@ pipeline {
     always {
         archiveArtifacts artifacts: "${SBOM_FILE}", fingerprint: true
     }
-  }*/
+  }
 
   stage('Secret Scan - Gitleaks') {
       // Corre el stage dentro del contenedor oficial de gitleaks
