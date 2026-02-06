@@ -11,12 +11,9 @@ pipeline {
     PROJECT_NAME = 'pygoat'
     PROJECT_VER = "build-${BUILD_NUMBER}"
     SBOM_FILE = 'bom.xml'
-
-
-    
   }
   stages {
-     stage('Security gate - Bandit (HIGH)') {
+    stage('Security gate - Bandit (HIGH)') {
       steps {
         sh ''
         '
@@ -36,7 +33,7 @@ pipeline {
         }
       }
     }
-   stage('Generate SBOM') {
+    stage('Generate SBOM') {
       steps {
         sh '''
           set -eux
@@ -56,6 +53,11 @@ pipeline {
           ls -lah "${SBOM_FILE}"
         '''
       }
+      post {
+        always {
+            archiveArtifacts artifacts: "${SBOM_FILE}", fingerprint: true
+        }
+      }
     }
     stage('Upload to Dependency-Track') {
       steps {
@@ -67,43 +69,31 @@ pipeline {
         )
       }
     }
-  }
-  post {
-    always {
-        archiveArtifacts artifacts: "${SBOM_FILE}", fingerprint: true
-    }
-  }
-
-  stage('Secret Scan - Gitleaks') {
-      // Corre el stage dentro del contenedor oficial de gitleaks
-      // IMPORTANTE: se fuerza entrypoint vacío para que Jenkins pueda ejecutar "sh"
-      agent {
-        docker {
-          image 'gitleaks/gitleaks:8.18.0'
-          args  '--entrypoint=""'
-          reuseNode true
-        }
-      }
-
-      steps {
-        sh '''
-          set -e
-          gitleaks version
-
-          # Escanea el repo del workspace. Si hay leaks, devuelve exit code 1 y falla el stage.
-          gitleaks detect \
-            --source . \
-            --report-format json \
-            --report-path gitleaks-report.json \
-            --redact \
-            --exit-code 1
-        '''
-      }
-
-      post {
-        always {
-          archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
-        }
+    stage('Security gate - Gitleaks') { 
+      agent { 
+          docker { 
+              image 'zricethezav/gitleaks:latest'
+              args '--entrypoint ""'
+              reuseNode true
+          } 
+      } 
+      steps { 
+          sh ''' 
+              set -eux 
+              # Ejecutar gitleaks dentro del contenedor (la imagen ya trae el binario) 
+              # Escanea el workspace actual
+              gitleaks detect \
+                  --source . \
+                  --report-format json \
+                  --report-path gitleaks-report.json \
+                  --redact \
+                  --exit-code 1 
+          '''
+      } 
+      post { 
+          always { 
+              archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true 
+          }
       }
     }
   }
